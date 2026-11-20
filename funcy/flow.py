@@ -213,7 +213,7 @@ def once_per(*argnames):
         done_set = set()
         done_list = list()
 
-        get_arg = arggetter(func)
+        get_arg = arggetter(func) if argnames else None
 
         @wraps(func)
         def wrapper(*args, **kwargs):

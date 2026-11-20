@@ -1,4 +1,5 @@
 from datetime import timedelta
+from functools import partial
 from threading import Thread
 import pytest
 from funcy.flow import *
@@ -229,6 +230,29 @@ def test_once():
     call(1)
     call(2)
     assert calls == [1]
+
+
+@pytest.mark.parametrize('decorate', [once, once_per()])
+def test_once_partial(decorate):
+    calls = []
+    initialize = decorate(partial(calls.append, 'configured'))
+    initialize()
+    initialize()
+    assert calls == ['configured']
+
+
+@pytest.mark.parametrize('decorate', [once, once_per()])
+def test_once_builtin_and_callable_object(decorate):
+    class Initializer:
+        __hash__ = None
+
+        def __call__(self, value):
+            return len(value)
+
+    for func in [len, Initializer()]:
+        initialize = decorate(func)
+        assert initialize('abc') == 3
+        assert initialize('more') is None
 
 
 def test_once_per():
